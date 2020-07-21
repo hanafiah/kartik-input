@@ -38,7 +38,7 @@
 <body>
     <label for="input-24">Planets and Satellites</label>
     <form id="test-form" method="POST" enctype="multipart/form-data">
-        <div class="file">
+        <div id="input-section">
             <input id="input-id" name="input24[]" type="file" multiple>
 
         </div>
@@ -47,6 +47,7 @@
         <br />
         <button type="submit" name="submit">hantar</button>
     </form>
+
     <script>
         $(document).ready(function() {
 
@@ -54,15 +55,29 @@
             $("#input-id").fileinput({
                 uploadUrl: '#',
                 maxFileSize: 1000,
+                fileActionSettings: {
+                    showRemove: true,
+                    showUpload: false,
+                    showZoom: false,
+                    showDrag: false,
+                }
             });
 
             $('#input-id').on('fileloaded', function(event, file, previewId, index, reader) {
-                console.log("fileloaded");
+
                 const r = new FileReader();
                 r.readAsDataURL(file);
                 r.onload = function() {
                     console.log(r.result);
-                    $('.file').append('<input id="data-' + previewId + '" type="text" name="upload[]" value="' + r.result + '"/>');
+                    $('<input/>').attr({
+                        type: 'text',
+                        id: previewId.replace(/[.|&;$%@"<>()+,]/g, ""), // + previewId,
+                        name: 'upload[]',
+                        class: 'uploadcls',
+                        value: r.result
+
+                    }).appendTo('#input-section');
+
                 };
                 r.onerror = function(error) {
                     console.log('Error: ', error);
@@ -71,18 +86,21 @@
             });
 
             $('#input-id').on('fileremoved', function(event, id, index) {
-                console.log('id = ' + id + ', index = ' + index);
-                $('.file').find("#data-" + id).remove();
-            });
-            $('#input-id').on('filedeleted', function(event, key, jqXHR, data) {
-                console.log('Key = ' + key);
-
+                $('#' + id.replace(/[.|&;$%@"<>()+,]/g, "")).remove();
             });
 
-
+            $('#input-id').on('filecleared', function(event) {
+                $('.uploadcls').remove();
+            });
 
         });
     </script>
+
+    <?php
+    if (isset($_POST)) {
+        print_r($_POST['upload']);
+    }
+    ?>
 </body>
 
 </html>
